@@ -1,37 +1,22 @@
-var ws = new WebSocket("ws://localhost:3000");
 
-var addText = function(msg) {
-  var newli = document.createElement("li");
-  newli.innerHTML = msg;
+var client = new WebSocket("ws://localhost:2000");
 
+client.addEventListener("message", function(message){
   var ul = document.querySelector("ul");
-  var firstli = ul.firstChild;
-  ul.insertBefore(newli, firstli);
-}
-ws.addEventListener("open", function(){
-  ws.send("hey bro");
+  var newLi = document.createElement("li");
+  var messageText = message.data;
+  newLi.innerHTML = "<li>" + messageText + "</li>";
+  ul.appendChild(newLi);
 });
-ws.addEventListener("message", function(evt) {
-  var obj = JSON.parse(evt.data);
-  console.log(obj);
-  var newmsg = obj.name + ": " + obj.msg;
-  addText(newmsg);
-  var blank = function(){
-    document.getElementById('msg').value='';
-  }
-  blank();
-})
 
+var message = document.getElementById("input");
+var namebox = document.getElementById("namebox");
+var button = document.getElementById("button");
 
-document.addEventListener("keydown", function(evt) {
-  if(evt.keyCode === 13){
-    var text = document.querySelector('#msg').value;
-    var name = document.querySelector('#name').value;
-    // addText(text);
-    var obj = {}
-    obj.name = name;
-    obj.msg = text;
-    var json = JSON.stringify(obj);
-    ws.send(json);
-  }
-})
+button.addEventListener("click", function(){
+  var msg = {name: namebox.value}
+  msg["words"] = message.value;
+  var encoded_msg = JSON.stringify(msg);
+  client.send(encoded_msg);
+  message.value = "";
+});

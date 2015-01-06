@@ -1,20 +1,23 @@
-var WSS = require('ws').Server;
-var server = new WSS({port: 3000});
-
+var WebSocketServer = require("ws").Server;
+var server = new WebSocketServer({port: 2000});
 var clients = [];
-// var history  = [];
-server.on("connection", function(ws) {
-  clients.push(ws);
-  ws.on("message", function(msg){
-    clients.forEach(function(elem){
-      elem.send(msg);
-    })
-    ws.send(msg);
-  })
-});
 
-ws.on("close", function (){
-  var x = clients.indexOf(ws);
-  clients.splice(x, 1);  //when user disconnects, removes user from user list
-  console.log(clients.length); //lets server know # of users in chatroom
+console.log("listening on port 2000");
+
+server.on("connection", function(connection) {
+  console.log("Client connected!");
+  clients.push(connection);
+  connection.on("close", function (){
+    var x = clients.indexOf(connection);
+    clients.splice(x, 1);
+    console.log(clients.length);
+  });
+  connection.on("message", function(message){
+    var msg = JSON.parse(message);
+    var msg_decoded = (msg.name + ": " + msg.words);
+    console.log(msg_decoded);
+    clients.forEach(function(client){
+      client.send(msg_decoded);
+    });
+  });
 });
